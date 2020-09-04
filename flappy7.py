@@ -13,7 +13,7 @@ pygame.init()
 pygame.font.init()
 size = w, h = 400, 600
 screen = pygame.display.set_mode((size), 32, 1)
-pygame.display.set_caption("Flappy Py")
+pygame.display.set_caption("Yellow bird")
 # 
 game = Score("score.txt")
 # ================== MUSIC ===================== #
@@ -75,11 +75,11 @@ class Sprite(pygame.sprite.Sprite):
 
         self.x = x
         self.y = y
-        self.frames = [load(f[:-4]) for f in glob(file + "*.png")]
-        self.framesup = [rotate(f[:-4], 45) for f in glob(file + "*.png")]
+        self.frames = [load(f[:-4]) for f in glob("imgs2\\" + file + "*.png")]
+        self.framesup = [load(f[:-4]) for f in glob("imgs2\\" + file + "*.png")]
         self.image = self.frames[0]
-        self.imagefall = rotate("fall", -45)
-        self.imagespeed = load("speed")
+        self.imagefall = rotate("imgs2\\blue4", -45)
+        self.imagespeed = load("imgs2\\blue4")
 
         self.rect = pygame.Rect(self.x, self.y, 32, 24)
         self.cnt = 0
@@ -94,7 +94,7 @@ class Sprite(pygame.sprite.Sprite):
     def update(self):
         global moveup, gameover
         # when moveup animation's faster
-        self.cnt += .1
+        self.cnt += .05
         if self.cnt > len(self.frames) - 1:
             self.cnt = 0
         if not moveup:
@@ -209,22 +209,22 @@ def start():
     global g, pipes, flappy, b1, b2
 
     g = pygame.sprite.Group()
-    Bg("bg", 0, 0)
+    Bg("bg2", 0, 0)
     pipes = pygame.sprite.Group()
-    Pipe("pipe", 100, 300, 0)
-    Pipe("pipe", 200, 300, 0)
-    Pipe("pipe", 300, 300, 0)
-    Pipe("pipe", 400, 300, 0)
-    Pipe("pipe", 500, 300, 0)
+    Pipe("pipe2", 100, 300, 0)
+    Pipe("pipe2", 200, 300, 0)
+    Pipe("pipe2", 300, 300, 0)
+    Pipe("pipe2", 400, 300, 0)
+    Pipe("pipe2", 500, 300, 0)
     # Upside down
-    Pipe("pipe", 100, 0, 1)
-    Pipe("pipe", 200, 0, 1)
-    Pipe("pipe", 300, 0, 1)
-    Pipe("pipe", 400, 0, 1)
-    Pipe("pipe", 500, 0, 1)
+    Pipe("pipe2", 100, 0, 1)
+    Pipe("pipe2", 200, 0, 1)
+    Pipe("pipe2", 300, 0, 1)
+    Pipe("pipe2", 400, 0, 1)
+    Pipe("pipe2", 500, 0, 1)
 
-    b1 = Base("base", 400, 570)
-    b2 = Base("base", 0, 570)
+    b1 = Base("base2", 400, 570)
+    b2 = Base("base2", 0, 570)
     flappy = Sprite("blue", 50, 300)
     main()
 
@@ -253,6 +253,10 @@ def main():
     speedup = 0
 
     while loop:
+
+        if flappy.score % 2500 == 0:
+            soundtrack()
+
         if speedup:
             b1.speed = 10
             b2.speed = 10
@@ -270,7 +274,7 @@ def main():
             flappy.rect.top -= jumpspeed
             startcounter += 1
             # fly faster
-            flappy.cnt += .5
+            flappy.cnt += .02
             # print(startcounter)
         if startcounter == topjump:
             startcounter = 0
@@ -299,7 +303,7 @@ def main():
                     speedup = 1
                 if event.key == pygame.K_ESCAPE:
                     loop = 0
-                if event.key == pygame.K_m:
+                if event.key == pygame.K_m or event.key == pygame.K_s:
                     menu()
             if event.type == pygame.KEYUP:
                 moveup = 0
@@ -322,16 +326,20 @@ def main():
 
 
 def menu():
+
     "This is the menu that waits you to click the s key to start"
-    bb = pygame.image.load("bg.png")
-    fl = pygame.image.load("bluebird-downflap.png")
+    bb = pygame.image.load("bg2.png")
+    fl = pygame.image.load("imgs\\blue1.png")
     screen.blit(bb, (0, 0))
     screen.blit(fl, (100, 300))
-    loop1 = 1
     screen.blit(write("Flappy Pygame"), (10, 0))
     screen.blit(write("Press any Key"), (10, 50))
     screen.blit(write("Press m to come back to this menu"), (10, 80))
     screen.blit(write("Press arrow key up to fly up and arrow key right to fly fast"), (10, 200))
+    
+    soundtrack()
+
+    loop1 = 1
     while loop1:
         for event in pygame.event.get():
             if (event.type == pygame.QUIT):

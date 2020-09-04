@@ -253,6 +253,10 @@ def main():
     speedup = 0
 
     while loop:
+
+        if flappy.score % 2500 == 0:
+            soundtrack()
+
         if speedup:
             b1.speed = 10
             b2.speed = 10
@@ -299,7 +303,7 @@ def main():
                     speedup = 1
                 if event.key == pygame.K_ESCAPE:
                     loop = 0
-                if event.key == pygame.K_m:
+                if event.key == pygame.K_m or event.key == pygame.K_s:
                     menu()
             if event.type == pygame.KEYUP:
                 moveup = 0
@@ -322,16 +326,20 @@ def main():
 
 
 def menu():
+
     "This is the menu that waits you to click the s key to start"
     bb = pygame.image.load("bg.png")
     fl = pygame.image.load("bluebird-downflap.png")
     screen.blit(bb, (0, 0))
     screen.blit(fl, (100, 300))
-    loop1 = 1
     screen.blit(write("Flappy Pygame"), (10, 0))
     screen.blit(write("Press any Key"), (10, 50))
     screen.blit(write("Press m to come back to this menu"), (10, 80))
     screen.blit(write("Press arrow key up to fly up and arrow key right to fly fast"), (10, 200))
+    
+    soundtrack()
+
+    loop1 = 1
     while loop1:
         for event in pygame.event.get():
             if (event.type == pygame.QUIT):
