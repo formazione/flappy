@@ -2,17 +2,19 @@ import pygame
 from glob import glob
 import random
 from functions.score import *
+from pygame.locals import *
+""" flappy 7
+added
+flags = DOUBLEBUF
 
-#
-# - added sound
-# - added font and score on screen
-# - save record
-#
+"""
 
 pygame.init()
 pygame.font.init()
+flags = DOUBLEBUF
 size = w, h = 400, 600
-screen = pygame.display.set_mode((size), 32, 1)
+screen = pygame.display.set_mode((size), flags)
+screen.convert_alpha()
 pygame.display.set_caption("Flappy Py")
 # 
 game = Score("score.txt")
@@ -27,6 +29,7 @@ pygame.mixer.set_num_channels(32)
 jump = pygame.mixer.Sound("sounds/jump.wav")
 jump.set_volume(0.5)
 hit = pygame.mixer.Sound("sounds/hit.wav")
+blip = pygame.mixer.Sound("sounds/blip.ogg")
 hit.set_volume(0.3)
 # To play a sound use: play(jump)
 
@@ -39,8 +42,8 @@ def play(snd):
 # List of songs for the soundtrack
 base = pygame.mixer.music
 music = ["sounds/" + f
-for f in os.listdir("sounds/")
-if f.startswith("base")]
+    for f in os.listdir("sounds/")
+    if f.startswith("base")]
 
 # ================================================= Soundtrack
 def load_random_song():
@@ -188,11 +191,11 @@ class Base(pygame.sprite.Sprite):
 
 
 def load(file):
-    return pygame.image.load(file + ".png")
+    return pygame.image.load(file + ".png").convert_alpha()
 
 
 def flip(file):
-    return pygame.transform.flip(load(file), 0, 1)
+    return pygame.transform.flip(load(file), 0, 1).convert_alpha()
 
 
 def rotate(file, angle):
@@ -228,14 +231,15 @@ def start():
     flappy = Sprite("blue", 50, 300)
     main()
 
-
+down_cnt = 0
 def main():
-    global moveup, gameover
+    global moveup, gameover, movedown, down_cnt
     global g, pipes, flappy, b1, b2
 
     # jump controlo variables:
     # - after you press
     moveup = 0
+    movedown = 0
 
     # =================== tutorial 4 - change 1
     gameover = 0
@@ -251,11 +255,13 @@ def main():
     clock = pygame.time.Clock()
     loop = 1
     speedup = 0
-
+    normal_speed = 2
     while loop:
 
-        if flappy.score % 2500 == 0:
+        if flappy.score % 1000 == 0:
             soundtrack()
+            normal_speed += 1
+            play(blip)
 
         if speedup:
             b1.speed = 10
@@ -265,10 +271,10 @@ def main():
                 moveup = 1
             flappy.image = flappy.imagespeed
         else:
-            b1.speed = 1
-            b2.speed = 1
+            b1.speed = normal_speed
+            b2.speed = normal_speed
             for pipe in pipes:
-                pipe.speed = 1
+                pipe.speed = normal_speed
 
         if moveup:
             flappy.rect.top -= jumpspeed
@@ -289,6 +295,7 @@ def main():
             flappy.image = flappy.imagefall
             if flappy.rect.top > 600:
                 flappy.kill()
+                menu()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -302,6 +309,9 @@ def main():
                     play(jump)
                     moveup = 1
                     startcounter = 1
+                if event.key == pygame.K_DOWN:
+                    play(jump)
+                    movedown = 1
                 if event.key == pygame.K_RIGHT:
                     play(jump)
                     speedup = 1
@@ -326,6 +336,13 @@ def main():
 
         if not moveup:
             gravity(flappy)
+        if movedown: # this is the effective one
+            down_cnt += 1
+            flappy.rect.top += 3
+            if down_cnt == 3: 
+                movedown = 0
+                down_cnt = 0
+
         pygame.display.update()
         clock.tick(60)
 
@@ -360,6 +377,9 @@ def menu():
                     play(jump)
                     moveup = 1
                     startcounter = 1
+                if event.key == pygame.K_DOWN:
+                    play(jump)
+                    movedown = 1
                 if event.key == pygame.K_RIGHT:
                     play(jump)
                     speedup = 1
@@ -370,6 +390,7 @@ def menu():
             if event.type == pygame.KEYUP:
                 moveup = 0
                 speedup = 0
+                movedown = 0
             if event.type == pygame.MOUSEBUTTONUP:
                 moveup = 0
 
@@ -383,6 +404,9 @@ def menu():
 
         if not moveup:
             gravity(flappy)
+        if movedown:
+            sprite.rect.top += 3
+            movedown = 0
         pygame.display.update()
         clock.tick(120)
 
