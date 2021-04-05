@@ -73,12 +73,20 @@ def soundtrack(play="yes", loop=1):
 
 # ================================================= Soundtrack
 
-font = pygame.font.SysFont("Arial", 16)
+font = pygame.font.SysFont("Arial", 32)
+font2 = pygame.font.SysFont("Arial", 20)
+font3 = pygame.font.SysFont("Arial", 24)
 
 
-def write(text_to_show, color="Coral"):
-    'write("Start")'
-    text = font.render(text_to_show, 1, pygame.Color(color))
+def write2(text_to_show, color="Coral", size=1):
+    ''' write("Start") '''
+    if size == 1:
+        fnt = font
+    elif size == 2:
+        fnt = font2
+    elif size == 3:
+        fnt = font3
+    text = fnt.render(text_to_show, 1, pygame.Color(color))
     return text
 
 
@@ -219,10 +227,10 @@ def gravity(sprite):
 # =========================== Tutorial 3 - change 1
 
 
+g = pygame.sprite.Group()
 def start():
     global g, pipes, flappy, b1, b2
 
-    g = pygame.sprite.Group()
     Bg("bg_3", 0, 0)
     pipes = pygame.sprite.Group()
     Pipe("pipe", 100, 300, 0)
@@ -272,7 +280,7 @@ def main():
     jumpspeed = 2
     screen.fill((0, 0, 0))
     # ============ p.5
-    text = write("Score")
+    text = write2("Score")
     clock = pygame.time.Clock()
     loop = 1
     speedup = 0
@@ -352,8 +360,8 @@ def main():
         
         screen.blit(flappy.image, (0, 0))
         screen.blit(text, (50, 0))
-        screen.blit(write(str(flappy.score), color="White"), (100, 0))
-        screen.blit(write(str(flappy.maxscore), color="White"), (150, 0))
+        screen.blit(write2(str(flappy.score), color="White"), (100, 0))
+        screen.blit(write2(str(flappy.maxscore), color="White"), (150, 0))
 
         if not moveup:
             gravity(flappy)
@@ -369,82 +377,77 @@ def main():
 
     pygame.quit()
 
+def render_multiline(data):
+        """Shows a multiline string with text, y pos and color for each line separated by comma"""
+        tc = []
+        for line in data.split("\n"):
+ 
+            if line != "":
+                text, height, color = line.split(",")
+                if height == " " or height == "":
+                    height = 0
+                    if color == " " or color == "":
+                        color = "red"
+                else:
+                    height = int(height)
+                tc.append([text, height, color])
+        # 2. Each list of the list above is send to write to render text
+        cnt = 0
+        for t, height, c in tc:
+            cnt += 40
+            # calls write passing the text, the vertical position and the color
+            for i in t.split("\n"):
+                if height == 0:
+                    height = cnt
+                write(i, 200, height, color=c)
+                height += 30
+
+
+
+TEXT1 = """*** FLAPPY BIRD ***, , gold
+A Game by Giovanni Gatto, , red
+,,
+Sponsored by,,
+pythonprogramming.altevista.org, , coral
+
+,,
+Commands, , green
+
+s key: go back to the menu,,gold
+
+Arrow up: fly up, , coral
+Arrow left: fly fast, , coral
+Arrow down: go down, , coral
+,,
+************ Version 1.9.0 - April 2021 *************, , gray"""
+
+
+
+def write(text, x, y, color="Coral",):
+    "Returns a surface with a text in the center of the screen, at y coord."
+    # renders a font object with a text (this return a surface with a text)
+    surface_text = font.render(text, 1, pygame.Color(color))
+    # get the center of the text with get_rect (from surface)
+    text_rect = surface_text.get_rect(center=(500 // 2, y))
+    # show on the screen the surface with text at the text_rect corrdinates in the center
+    screen.blit(surface_text, text_rect)
+    return surface_text
 
 def menu():
 
     "This is the menu that waits you to click the s key to start"
     bb = pygame.image.load("bg_3.png")
     fl = pygame.image.load("bluebird-downflap.png")
+    fl = pygame.transform.scale(fl, (100, 64))
+    flappy = Sprite("blue", 30, 500)
     screen.blit(bb, (0, 0))
-    screen.blit(fl, (100, 300))
-    screen.blit(write("Flappy Pygame"), (10, 0))
-    screen.blit(write("Press any Key"), (10, 50))
-    screen.blit(write("Press m to come back to this menu"), (10, 80))
-    screen.blit(write("Press arrow key up to fly up and arrow key right to fly fast"), (10, 200))
+    render_multiline(TEXT1)
+    screen.blit(fl, (500, 300))
+    # screen.blit(write("Flappy Pygame"), (10, 0))
+    # screen.blit(write("Press any Key"), (10, 50))
+    # screen.blit(write("Press m to come back to this menu"), (10, 80))
+    # screen.blit(write("Press arrow key up to fly up and arrow key right to fly fast"), (10, 200))
     
-    soundtrack()
-
-    loop1 = 1
-    while loop1:
-        for event in pygame.event.get():
-            if (event.type == pygame.QUIT):
-                loop1 = 0
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                play(jump)
-                moveup = 1
-                startcounter = 1
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    play(jump)
-                    moveup = 1
-                    startcounter = 1
-                if event.key == pygame.K_DOWN:
-                    play(jump)
-                    movedown = 1
-                if event.key == pygame.K_RIGHT:
-                    play(jump)
-                    speedup = 1
-                if event.key == pygame.K_ESCAPE:
-                    loop = 0
-                if event.key == pygame.K_m or event.key == pygame.K_s:
-                    menu()
-            if event.type == pygame.KEYUP:
-                moveup = 0
-                speedup = 0
-                movedown = 0
-            if event.type == pygame.MOUSEBUTTONUP:
-                moveup = 0
-
-        g.draw(screen)
-        g.update()
-        
-        screen.blit(flappy.image, (0, 0))
-        screen.blit(text, (50, 0))
-        screen.blit(write(str(flappy.score), color="White"), (100, 0))
-        screen.blit(write(str(flappy.maxscore), color="White"), (150, 0))
-
-        if not moveup:
-            gravity(flappy)
-        if movedown:
-            sprite.rect.top += 3
-            movedown = 0
-        pygame.display.update()
-        clock.tick(120)
-
-    pygame.quit()
-
-
-def menu():
-
-    "This is the menu that waits you to click the s key to start"
-    bb = pygame.image.load("bg.png")
-    fl = pygame.image.load("bluebird-downflap.png")
-    screen.blit(bb, (0, 0))
-    screen.blit(fl, (100, 300))
-    screen.blit(write("Flappy Pygame"), (10, 0))
-    screen.blit(write("Press any Key"), (10, 50))
-    screen.blit(write("Press m to come back to this menu"), (10, 80))
-    screen.blit(write("Press arrow key up to fly up and arrow key right to fly fast"), (10, 200))
     
     soundtrack()
 
@@ -457,7 +460,6 @@ def menu():
                 press_escape = event.key == pygame.K_ESCAPE
                 if press_escape:
                     loop1 = 0
-
                 start()
         pygame.display.update()
 
