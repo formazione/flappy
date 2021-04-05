@@ -24,7 +24,7 @@ window_width,window_height = screen_width-10, screen_height-50
 ratio = screen_height / 500
 width = int(500 * ratio)
 screen_posx = int((width - 500) // 2)
-mainsurface = pygame.display.set_mode((500, 500), flags)
+mainsurface = pygame.display.set_mode((800, 600), flags)
 screen.convert_alpha()
 pygame.display.set_caption("Flappy Py")
 # 
@@ -172,8 +172,8 @@ class Pipe(pygame.sprite.Sprite):
     def update(self):
 
         self.rect.left -= self.speed
-        if self.rect.left < -100:
-            self.rect.left = 400
+        if self.rect.left < -200:
+            self.rect.left = 800
             self.y = random.randint(300, 400)
             if self.pos == 0:
                 self.rect.top = self.y
@@ -197,8 +197,8 @@ class Base(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.left -= self.speed
-        if self.rect.left < -400:
-            self.rect.left = 399
+        if self.rect.left < -800:
+            self.rect.left = 799
 
 
 def load(file):
@@ -223,22 +223,32 @@ def start():
     global g, pipes, flappy, b1, b2
 
     g = pygame.sprite.Group()
-    Bg("bg", 0, 0)
+    Bg("bg_3", 0, 0)
     pipes = pygame.sprite.Group()
     Pipe("pipe", 100, 300, 0)
     Pipe("pipe", 200, 300, 0)
     Pipe("pipe", 300, 300, 0)
     Pipe("pipe", 400, 300, 0)
     Pipe("pipe", 500, 300, 0)
+    Pipe("pipe", 600, 300, 0)
+    Pipe("pipe", 700, 300, 0)
+    Pipe("pipe", 800, 300, 0)
+    Pipe("pipe", 900, 300, 0)
+    Pipe("pipe", 1000, 300, 0)
     # Upside down
     Pipe("pipe", 100, 0, 1)
     Pipe("pipe", 200, 0, 1)
     Pipe("pipe", 300, 0, 1)
     Pipe("pipe", 400, 0, 1)
     Pipe("pipe", 500, 0, 1)
+    Pipe("pipe", 600, 0, 1)
+    Pipe("pipe", 700, 0, 1)
+    Pipe("pipe", 800, 0, 1)
+    Pipe("pipe", 900, 0, 1)
+    Pipe("pipe", 1000, 0, 1)
 
-    b1 = Base("base", 400, 570)
-    b2 = Base("base", 0, 570)
+    b1 = Base("base_3", 800, 570)
+    b2 = Base("base_3", 0, 570)
     flappy = Sprite("blue", 50, 300)
     main()
 
@@ -363,7 +373,7 @@ def main():
 def menu():
 
     "This is the menu that waits you to click the s key to start"
-    bb = pygame.image.load("bg.png")
+    bb = pygame.image.load("bg_3.png")
     fl = pygame.image.load("bluebird-downflap.png")
     screen.blit(bb, (0, 0))
     screen.blit(fl, (100, 300))
