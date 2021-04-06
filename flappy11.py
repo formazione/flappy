@@ -57,6 +57,9 @@ music = ["sounds/" + f
     if f.startswith("base")]
 
 # ================================================= Soundtrack
+def load(file):
+    return pygame.image.load(file + ".png").convert_alpha()
+
 def load_random_song():
     song = random.choice(music)
     return song
@@ -147,22 +150,34 @@ class Bg(pygame.sprite.Sprite):
         g.add(self)
 
 
+def flip(file):
+    return pygame.transform.flip(load(file), 0, 1).convert_alpha()
+
+
+# loads all different type of pipes
+pipes_images = [load("pipes/" + f[:-4]) for f in os.listdir("pipes")]
+image1 = pipes_images[random.randint(0, (len(pipes_images) - 1))]
+
+# load different backgrounds
+bgs = [load("bg/" + f[:-4]) for f in os.listdir("bg")]
+bg1 = bgs[random.randint(0, (len(bgs) - 1))]
+
 class Pipe(pygame.sprite.Sprite):
     def __init__(self, file, x, y, pos=0):
         global g, pipes, lasty
 
         super(Pipe, self).__init__()
 
-        self.x = x + 300
+        self.x = x + random.randint(300, 400)
         self.pos = pos
         self.y = random.randint(300, 400)
-        self.speed = 1
+        self.speed = normal_speed
 
         if self.pos == 0:
-            self.image = load(file)
+            self.image = image1
             self.rect = pygame.Rect(self.x, self.y, 52, 320)
         else:
-            self.image = flip(file)
+            self.image = image1
             self.rect = pygame.Rect(self.x, self.y, 52, 320)
             self.rect.bottom = self.y - random.randint(150, 300)
         pipes.add(self)
@@ -173,7 +188,7 @@ class Pipe(pygame.sprite.Sprite):
 
         self.rect.left -= self.speed
         if self.rect.left < -200:
-            self.rect.left = 800
+            self.rect.left = 800 + random.randint(50, 100)
             self.y = random.randint(300, 400)
             if self.pos == 0:
                 self.rect.top = self.y
@@ -183,30 +198,25 @@ class Pipe(pygame.sprite.Sprite):
 
 
 
-class Base(pygame.sprite.Sprite):
+class Terrain(pygame.sprite.Sprite):
     def __init__(self, file, x, y):
         global g
 
-        super(Base, self).__init__()
+        super(Terrain, self).__init__()
         self.x = x
         self.y = y
         self.image = load(file)
         self.rect = pygame.Rect(self.x, self.y, 32, 32)
-        self.speed = 1
+        self.speed = normal_speed
         g.add(self)
 
     def update(self):
         self.rect.left -= self.speed
-        if self.rect.left < -800:
-            self.rect.left = 799
+        if self.rect.left < -700:
+            self.rect.left = 798
 
 
-def load(file):
-    return pygame.image.load(file + ".png").convert_alpha()
 
-
-def flip(file):
-    return pygame.transform.flip(load(file), 0, 1).convert_alpha()
 
 
 def rotate(file, angle):
@@ -220,25 +230,24 @@ def gravity(sprite):
 
 
 def start():
-    global g, pipes, flappy, b1, b2
+    global g, pipes, flappy, terrain1, terrain2, bg_surface
+
 
     
-    Bg("bg_3", 0, 0)
+    bg_surface = Bg("bg_3", 0, 0)
     pipes = pygame.sprite.Group()
-    if random.randint(1, 2):
-        Pipe("pipe", 200, 300, 0)
+
+    Pipe("pipe", 200, 300, 0)
     Pipe("pipe", 300, 300, 0)
     Pipe("pipe", 400, 300, 0)
     Pipe("pipe", 500, 300, 0)
-    if random.randint(1, 2):
-        Pipe("pipe", 600, 300, 0)
+    Pipe("pipe", 600, 300, 0)
     Pipe("pipe", 700, 300, 0)
     Pipe("pipe", 800, 300, 0)
     Pipe("pipe", 900, 300, 0)
     Pipe("pipe", 1000, 300, 0)
     Pipe("pipe", 1100, 300, 0)
     # Upside down
-    Pipe("pipe", 100, 0, 1)
     Pipe("pipe", 200, 0, 1)
     Pipe("pipe", 300, 0, 1)
     Pipe("pipe", 400, 0, 1)
@@ -248,16 +257,18 @@ def start():
     Pipe("pipe", 800, 0, 1)
     Pipe("pipe", 900, 0, 1)
     Pipe("pipe", 1000, 0, 1)
+    Pipe("pipe", 1100, 0, 1)
 
-    b1 = Base("base_3", 800, 570)
-    b2 = Base("base_3", 0, 570)
+    terrain = random.choice(["terrain_4", "terrain_5"])
+    terrain1 = Terrain(terrain, 800, 570)
+    terrain2 = Terrain(terrain, 0, 570)
     flappy = Sprite("blue", 300, 300)
     main()
 
 down_cnt = 0
 def main():
     global moveup, gameover, movedown, down_cnt
-    global g, pipes, flappy, b1, b2
+    global g, pipes, flappy, terrain1, terrain2, image1, image2, bg_surface
 
     # jump controlo variables:
     # - after you press
@@ -285,17 +296,23 @@ def main():
             soundtrack()
             normal_speed += 1
             play(blip)
+            image1 = pipes_images[random.randint(0, (len(pipes_images) - 1))]
+            for pipe in pipes:
+                pipe.image = image1
+            bg1 = bgs[random.randint(0, (len(bgs) - 1))]
+            bg_surface.image = bg1
+
 
         if speedup:
-            b1.speed = 10
-            b2.speed = 10
+            terrain1.speed = 10
+            terrain2.speed = 10
             for pipe in pipes:
                 pipe.speed = 10
                 moveup = 1
             flappy.image = flappy.imagespeed
         else:
-            b1.speed = normal_speed
-            b2.speed = normal_speed
+            terrain1.speed = normal_speed
+            terrain2.speed = normal_speed
             for pipe in pipes:
                 pipe.speed = normal_speed
 
