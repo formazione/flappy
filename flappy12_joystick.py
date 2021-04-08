@@ -3,7 +3,6 @@ from glob import glob
 import random
 from functions.score import *
 from pygame.locals import *
-
 """ flappy 7
 added
 flags = DOUBLEBUF
@@ -23,26 +22,19 @@ screen          secundary surface
 """
 
 pygame.init()
-size = w, h = 800, 600
-
-# flags = DOUBLEBUF
-# =================== USE THIS FOR FULL SCREEN ==========
-flags = DOUBLEBUF | FULLSCREEN
-screen = pygame.display.set_mode((size))
-# ====== IF YOU DO NOT WANT FULLSCREEN, DELETE flags ====
-info = pygame.display.Info() # You have to call this before pygame.display.set_mode()
+pygame.font.init()
+info = pygame.display.Info()
 WIDTH, HEIGHT = info.current_w, info.current_h
-# NO FULLSCREEN
 mainsurface = pygame.display.set_mode((WIDTH, HEIGHT))
-# FULL SCREEN
-# mainsurface = pygame.display.set_mode((WIDTH, HEIGHT), flags)
-screen.convert()
-
-
-
-# window_width,window_height = WIDTH-10, screen_height-50
-# mainsurface = pygame.display.set_mode((800, 600), flags)
 pygame.display.set_caption("Flappy Py")
+w, h = 800, 600
+screen = pygame.Surface((800, 600))
+screen.convert_alpha()
+
+ratio = HEIGHT / 500
+width = int(500 * ratio)
+screen_posx = int((WIDTH - 500) // 2)
+# mainsurface = pygame.display.set_mode((800, 600), flags)
 # 
 game = Score("score.txt")
 # ================== MUSIC ===================== #
@@ -294,20 +286,6 @@ def start():
     flappy = Sprite("blue", 300, 300)
     main()
 
-
-def button(screen, position, text):
-    font = pygame.font.SysFont("Arial", 50)
-    text_render = font.render(text, 1, (255, 0, 0))
-    x, y, w , h = text_render.get_rect()
-    x, y = position
-    pygame.draw.line(screen, (150, 150, 150), (x, y), (x + w , y), 5)
-    pygame.draw.line(screen, (150, 150, 150), (x, y - 2), (x, y + h), 5)
-    pygame.draw.line(screen, (50, 50, 50), (x, y + h), (x + w , y + h), 5)
-    pygame.draw.line(screen, (50, 50, 50), (x + w , y+h), [x + w , y], 5)
-    pygame.draw.rect(screen, (100, 100, 100), (x, y, w , h))
-    return screen.blit(text_render, (x, y))
-
-
 down_cnt = 0
 def main():
     global moveup, gameover, movedown, down_cnt
@@ -383,6 +361,44 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 loop = 0
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                play(jump)
+                moveup = 1
+                startcounter = 1
+            if event.type == pygame.JOYBUTTONDOWN:
+
+
+                # <== LEFT
+                if event.button == 0: # button 1 left
+                    if flappy.rect.left > 10:
+                        flappy.rect.left -= 20
+                    moveup = 1
+
+                # DOWN
+                if event.button == 1: # button 2 down
+                    play(jump)
+                    flappy.image = flappy.imagefall
+                    movedown = 1
+                
+                # RIGHT =>
+                if event.button == 2: # button 3 right (AVANTI VELOCE - RIGHT)
+                    if flappy.rect.right < 300:
+                        flappy.rect.right += 10
+                    play(jump)
+                    speedup = 1
+
+                # UP
+                if event.button == 3: # K_UP (pulsante 4 in alto)
+                    play(jump)
+                    moveup = 1
+                    startcounter = 1
+
+                if event.button == 4: # button 4 up
+                    flappy.kill()
+                    menu()
+                if event.button == 5: # button 4 up
+                    pygame.quit()
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     play(jump)
@@ -406,16 +422,14 @@ def main():
                 if event.key == pygame.K_m or event.key == pygame.K_s:
                     flappy.kill()
                     menu()
+            # When you do not do nothing
+
+            if event.type == pygame.JOYBUTTONUP:
+                speedup = 0
+                moveup = 0
             if event.type == pygame.KEYUP:
                 moveup = 0
                 speedup = 0
-
-            #   MOUSE USER INTERACTIONS
-
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                play(jump)
-                moveup = 1
-                startcounter = 1
             if event.type == pygame.MOUSEBUTTONUP:
                 moveup = 0
 
@@ -436,7 +450,7 @@ def main():
             if down_cnt == 3: 
                 movedown = 0
                 down_cnt = 0
-
+        mainsurface.blit(pygame.transform.scale(screen, (WIDTH, HEIGHT)), (0, 0))
         pygame.display.update()
         clock.tick(60)
 
@@ -514,15 +528,12 @@ def splash_page():
     render_multiline(TEXT1)
     screen.blit(fl, (500, 300))
     soundtrack()
-    b1 = button(screen, (600, 500), "Quit")
-    b2 = button(screen, (500, 500), "Start")
-    return b1, b2
 
 
 def menu():
     """ This is the menu that waits you to click the s key to start """
 
-    b1, b2 = splash_page()
+    splash_page()
     while True:
         for event in pygame.event.get():
             if (event.type == pygame.QUIT):
@@ -532,15 +543,25 @@ def menu():
                     exit()
                 if event.key == pygame.K_s:
                     start()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if b1.collidepoint(pygame.mouse.get_pos()):
-                    exit()
-                elif b2.collidepoint(pygame.mouse.get_pos()):
-                    start()
+            if event.type == pygame.JOYBUTTONDOWN:
+                start()
+        mainsurface.blit(pygame.transform.scale(screen, (WIDTH, HEIGHT)), (0, 0))
         pygame.display.update()
     pygame.quit()
 
-    
+# ======================= JOYSTICK ===============
+def joystick_init():
+    """ To initialize joystick """
+
+    pygame.joystick.init()
+    joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
+    for joystick in joysticks:
+        print(joystick.get_name())
+    return joysticks
+
+
+joysticks = joystick_init()
+# =========================================joysticks (end) 
 
 
 g = pygame.sprite.Group()

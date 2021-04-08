@@ -23,27 +23,18 @@ screen          secundary surface
 
 pygame.init()
 pygame.font.init()
-size = w, h = 800, 600
-
-# flags = DOUBLEBUF
-# =================== USE THIS FOR FULL SCREEN ==========
-flags = DOUBLEBUF | FULLSCREEN
-screen = pygame.display.set_mode((size), flags)
-# ====== IF YOU DO NOT WANT FULLSCREEN, DELETE flags ====
-
-pygame.init()
-
-info = pygame.display.Info() # You have to call this before pygame.display.set_mode()
-screen_width,screen_height = info.current_w,info.current_h
-# screen = pygame.display.set_mode(resolution, flags, bpp)
-window_width,window_height = screen_width-10, screen_height-50
-ratio = screen_height / 500
-width = int(500 * ratio)
-screen_posx = int((width - 500) // 2)
-mainsurface = pygame.display.set_mode((800, 600))
-# mainsurface = pygame.display.set_mode((800, 600), flags)
-screen.convert_alpha()
+info = pygame.display.Info()
+WIDTH, HEIGHT = info.current_w, info.current_h
+mainsurface = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Flappy Py")
+w, h = 800, 600
+screen = pygame.Surface((800, 600))
+screen.convert_alpha()
+
+ratio = HEIGHT / 500
+width = int(500 * ratio)
+screen_posx = int((WIDTH - 500) // 2)
+# mainsurface = pygame.display.set_mode((800, 600), flags)
 # 
 game = Score("score.txt")
 # ================== MUSIC ===================== #
@@ -374,6 +365,11 @@ def main():
                 play(jump)
                 moveup = 1
                 startcounter = 1
+            if event.type == pygame.JOYBUTTONDOWN:
+                play(jump)
+                moveup = 1
+                startcounter = 1
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     play(jump)
@@ -397,10 +393,15 @@ def main():
                 if event.key == pygame.K_m or event.key == pygame.K_s:
                     flappy.kill()
                     menu()
+
+            # When you do not do nothing
+
             if event.type == pygame.KEYUP:
                 moveup = 0
                 speedup = 0
             if event.type == pygame.MOUSEBUTTONUP:
+                moveup = 0
+            if event.type == pygame.JOYBUTTONUP:
                 moveup = 0
 
 
@@ -420,7 +421,7 @@ def main():
             if down_cnt == 3: 
                 movedown = 0
                 down_cnt = 0
-
+        mainsurface.blit(pygame.transform.scale(screen, (WIDTH, HEIGHT)), (0, 0))
         pygame.display.update()
         clock.tick(60)
 
@@ -513,10 +514,25 @@ def menu():
                     exit()
                 if event.key == pygame.K_s:
                     start()
+            if event.type == pygame.JOYBUTTONDOWN:
+                start()
+        mainsurface.blit(pygame.transform.scale(screen, (WIDTH, HEIGHT)), (0, 0))
         pygame.display.update()
     pygame.quit()
 
-    
+# ======================= JOYSTICK ===============
+def joystick_init():
+    """ To initialize joystick """
+
+    pygame.joystick.init()
+    joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
+    for joystick in joysticks:
+        print(joystick.get_name())
+    return joysticks
+
+
+joysticks = joystick_init()
+# =========================================joysticks (end) 
 
 
 g = pygame.sprite.Group()
